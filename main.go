@@ -63,7 +63,7 @@ func (e *engine) GET(path string, f handlerFunc) {
 	e.handleFunc(path, http.MethodGet, f)
 }
 func (e *engine) POST(path string, f handlerFunc) {
-	e.handleFunc(path, http.MethodPut, f)
+	e.handleFunc(path, http.MethodPost, f)
 }
 func (h handler) handlerFunc(w http.ResponseWriter, r *http.Request) {
 	if h.method != r.Method {
