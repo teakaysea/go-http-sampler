@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -34,15 +35,24 @@ func (c *context) status(code int) {
 func (c *context) writeBody(str string) {
 	fmt.Fprintln(c.w, str)
 }
-func hello(c *context) {
+func getHello(c *context) {
 	c.status(http.StatusOK)
-	c.writeBody("Hello, world!!")
+	c.writeBody("Hello, world!! via GET")
+}
+func postHello(c *context) {
+	c.status(http.StatusOK)
+	c.writeBody("Hello, world!! via POST")
 }
 func main() {
 	e := newEngine()
-	e.GET("/hello", hello)
+	e.GET("/hello", getHello)
+	e.POST("/hello", postHello)
 
-	http.ListenAndServe(":8080", nil)
+	port := "8080"
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("failed to start server on port %s", port)
+	}
+	log.Printf("server on port %s started", port)
 }
 
 func (e *engine) handleFunc(path, method string, f handlerFunc) {
@@ -51,6 +61,9 @@ func (e *engine) handleFunc(path, method string, f handlerFunc) {
 }
 func (e *engine) GET(path string, f handlerFunc) {
 	e.handleFunc(path, http.MethodGet, f)
+}
+func (e *engine) POST(path string, f handlerFunc) {
+	e.handleFunc(path, http.MethodPut, f)
 }
 func (h handler) handlerFunc(w http.ResponseWriter, r *http.Request) {
 	if h.method != r.Method {
