@@ -7,10 +7,22 @@ import (
 )
 
 type handler struct {
-	method string
-	f      handlerFunc
+	path string
+	m    map[string]handlerFunc
 }
+
+func key(path, method string) string {
+	return fmt.Sprintf("%s %s", method, path)
+}
+
+// func newHandler(path, method string, f handlerFunc) handler {
+// 	return handler{key: key(path, method), path: path, method: method, f: f}
+// }
+
+type handlers map[string]handler
+
 type engine struct {
+	hs handlers
 }
 type context struct {
 	w http.ResponseWriter
@@ -20,7 +32,9 @@ type context struct {
 type handlerFunc func(*context)
 
 func newEngine() *engine {
-	return new(engine)
+	e := new(engine)
+	e.hs = map[string]handler{}
+	return e
 }
 
 func newContext(w http.ResponseWriter, r *http.Request) *context {
@@ -55,21 +69,37 @@ func main() {
 	log.Printf("server on port %s started", port)
 }
 
-func (e *engine) handleFunc(path, method string, f handlerFunc) {
-	h := handler{method: method, f: f}
-	http.HandleFunc(path, h.handlerFunc)
-}
 func (e *engine) GET(path string, f handlerFunc) {
 	e.handleFunc(path, http.MethodGet, f)
 }
 func (e *engine) POST(path string, f handlerFunc) {
 	e.handleFunc(path, http.MethodPost, f)
 }
+func (e *engine) handleFunc(path, method string, f handlerFunc) {
+	h, ok := e.handler(path, method, f)
+	if !ok {
+		http.HandleFunc(path, h.handlerFunc)
+	}
+}
+func (e *engine) handler(path, method string, f handlerFunc) (handler, bool) {
+	h, ok := e.hs[path]
+	if !ok {
+		h = handler{path: path, m: map[string]handlerFunc{}}
+		e.hs[path] = h
+	}
+	h.m[method] = f
+	return h, ok
+}
+func (h handler) handlerFuncWithContext(method string) (handlerFunc, bool) {
+	f, ok := h.m[method]
+	return f, ok
+}
 func (h handler) handlerFunc(w http.ResponseWriter, r *http.Request) {
-	if h.method != r.Method {
-		w.WriteHeader(http.StatusBadRequest)
+	c := newContext(w, r)
+	f, ok := h.handlerFuncWithContext(r.Method)
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	c := newContext(w, r)
-	h.f(c)
+	f(c)
 }
