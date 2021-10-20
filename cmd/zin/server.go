@@ -15,14 +15,11 @@ func main() {
 	zin.Run()
 }
 func getHello(c *zin.Context) {
-	c.Status(http.StatusOK)
-	c.WriteBody("Hello, world!! via GET")
+	c.JSON(http.StatusOK, zin.H{"message": "Hello, world!! via GET"})
 }
 func postHello(c *zin.Context) {
-	c.Status(http.StatusOK)
-	c.WriteBody("Hello, world!! via POST")
+	c.JSON(http.StatusOK, zin.H{"message": "Hello, world!! via POST"})
 }
 func postBye(c *zin.Context) {
-	c.Status(http.StatusOK)
-	c.WriteBody("Bye, world!! via POST")
+	c.JSON(http.StatusOK, zin.H{"message": "Bye, world!! via POST"})
 }
