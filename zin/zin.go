@@ -1,6 +1,7 @@
 package zin
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -40,6 +41,15 @@ func (c *Context) Status(code int) {
 }
 func (c *Context) WriteBody(str string) {
 	fmt.Fprintln(c.w, str)
+}
+
+type H map[string]interface{}
+
+func (c *Context) JSON(status int, h H) {
+	c.Status(status)
+	if b, err := json.Marshal(h); err == nil {
+		c.WriteBody(string(b))
+	}
 }
 func Run() {
 
