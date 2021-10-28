@@ -51,6 +51,9 @@ func (c *Context) JSON(status int, h H) {
 		c.WriteBody(string(b))
 	}
 }
+func (c *Context) Query(key string) string {
+	return c.r.URL.Query().Get(key)
+}
 func Run() {
 
 	port := "8080"

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/teakaysea/go-http-sampler/zin"
@@ -15,7 +16,11 @@ func main() {
 	zin.Run()
 }
 func getHello(c *zin.Context) {
-	c.JSON(http.StatusOK, zin.H{"message": "Hello, world!! via GET"})
+	name := c.Query("name")
+	if name == "" {
+		name = "world"
+	}
+	c.JSON(http.StatusOK, zin.H{"message": fmt.Sprintf("Hello, %s!! via GET", name)})
 }
 func postHello(c *zin.Context) {
 	c.JSON(http.StatusOK, zin.H{"message": "Hello, world!! via POST"})
